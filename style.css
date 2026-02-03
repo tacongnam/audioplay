@@ -143,6 +143,10 @@ input[type="color"] {
   z-index: 500; /* Đảm bảo nằm dưới Arm nhưng trên Vinyl */
   position: relative;
   pointer-events: none; /* Để không chặn thao tác xoay đĩa bên dưới */
+  height: 80vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 .title-marquee-container {
   width: 45vw;
@@ -186,13 +190,22 @@ input[type="color"] {
   letter-spacing: 3px;
   font-family: "Syncopate", sans-serif;
 }
-.lyrics-window {
-  height: 40vh;
+.meta-info {
   width: 100%;
   overflow: visible;
   position: relative;
+  mask-image: linear-gradient(transparent, #000 15%, #000 65%, transparent);
+  scrollbar-width: none;
+}
+.lyrics-window {
+  height: 40vh;
+  width: 100%;
+  overflow-y: hidden;
+  overflow-x: visible;
+  position: relative;
   mask-image: linear-gradient(transparent, #000 15%, #000 85%, transparent);
   scrollbar-width: none;
+  pointer-events: auto;
 }
 .lyrics-window::-webkit-scrollbar {
   display: none;
@@ -208,6 +221,7 @@ input[type="color"] {
   white-space: nowrap;
   width: fit-content;
   pointer-events: auto;
+  transform-origin: left center;
 }
 .lyric-line.active {
   opacity: 1;
@@ -240,10 +254,49 @@ input[type="color"] {
   height: 30px;
   transform-origin: 0px 15px;
   transform: rotate(75deg);
-  transition: 1.5s cubic-bezier(0.6, 0, 0.2, 1);
+  transition: transform 0.3s ease-out;
+  cursor: grab;
+}
+.arm-pivot.dragging {
+  transition: none; /* Phải tắt transition để kim bám sát tay người dùng */
+  cursor: grabbing;
+}
+#arm-time-indicator {
+  position: absolute;
+  top: -60px; /* Căn chỉnh lên trên đầu kim */
+  left: 450px; /* Đẩy ra phía đầu kim */
+  background: #fff;
+  color: #000;
+  padding: 5px 12px;
+  font-family: "JetBrains Mono", monospace;
+  font-weight: 800;
+  font-size: 0.9rem;
+  border-radius: 4px;
+  display: none; /* JS sẽ cho hiện khi bạn bắt đầu kéo (mousedown) */
+  z-index: 2000;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  pointer-events: none; /* Để không bị vướng khi click chuột */
+}
+.time-hint {
+  position: absolute;
+  top: -40px;
+  left: 500px; /* Vị trí gần đầu kim */
+  background: rgba(255, 255, 255, 0.9);
+  color: #000;
+  padding: 4px 8px;
+  font-family: "JetBrains Mono";
+  font-size: 14px;
+  font-weight: bold;
+  border-radius: 4px;
+  display: none; /* Ẩn mặc định */
+  pointer-events: none;
+  z-index: 2000;
+}
+.arm-system:active .time-hint {
+  display: block;
 }
 body.playing .arm-pivot {
-  transform: rotate(40deg);
+  transform: rotate(35deg);
 }
 .arm-shaft {
   width: 500px;
@@ -266,22 +319,36 @@ body.playing .arm-pivot {
 }
 .arm-head {
   position: absolute;
-  left: 0;
+  left: 500px; /* Đưa ra tận đầu thanh bạc */
   top: -14px;
   width: 80px;
   height: 40px;
   background: #111;
-  transform: rotate(5deg);
-  border-radius: 4px 10px 10px 4px;
+  /* Xoay lại hướng để mũi kim hướng vào trong */
+  transform: rotate(-15deg);
+  /* Bo góc lại: đầu nhọn hướng về phía trước */
+  border-radius: 10px 4px 4px 10px;
+  box-shadow: 2px 5px 10px rgba(0, 0, 0, 0.5);
 }
 .stylus {
   position: absolute;
-  left: 10px;
-  bottom: 0px;
-  width: 4px;
-  height: 12px;
-  background: #fff;
-  clip-path: polygon(50% 100%, 100% 0, 0 0);
+  right: 10px; /* Đưa ra đầu mũi headshell */
+  bottom: -2px;
+  width: 6px;
+  height: 15px;
+  background: #eee;
+  /* Hình tam giác nhọn hướng xuống đĩa */
+  clip-path: polygon(50% 100%, 0 0, 100% 0);
+}
+.arm-head::before {
+  content: "";
+  position: absolute;
+  left: -10px;
+  top: 15px;
+  width: 20px;
+  height: 10px;
+  background: #444;
+  border-radius: 2px;
 }
 .vinyl-viewport {
   position: absolute;
@@ -327,11 +394,21 @@ body.playing .arm-pivot {
     circle at center,
     rgba(0, 0, 0, 1) 0px,
     rgba(0, 0, 0, 1) 1px,
-    rgba(30, 30, 30, 0.5) 1.5px,
-    rgba(0, 0, 0, 1) 2px
+    rgba(255, 255, 255, 0.03) 1.2px,
+    /* Đường highlight cực mảnh để lộ rãnh */ rgba(0, 0, 0, 1) 2px
   );
   z-index: 5;
-  opacity: 0.8;
+  opacity: 0.9; /* Tăng độ đậm */
+}
+.vinyl-disk::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: url("https://www.transparenttextures.com/patterns/black-linen.png"); /* Texture vải/nhựa nhẹ */
+  opacity: 0.1;
+  z-index: 6;
+  pointer-events: none;
 }
 .gloss {
   position: absolute;
@@ -368,11 +445,13 @@ body.playing .arm-pivot {
   position: fixed;
   bottom: 0;
   left: 50%;
-  transform: translateX(-50%) translateY(120px);
   z-index: 2000;
   padding: 20px 50px 70px;
-  transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    opacity 0.8s ease,
+    transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
   opacity: 0;
+  transform: translateX(-50%) translateY(120px);
 }
 .gallery-container.visible,
 body:hover .gallery-container {
