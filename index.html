@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Analog Experience - Stable Edition</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=Manrope:wght@300;500;800&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="settings-trigger" id="settings-toggle"><span>MENU</span></div>
+
+    <!-- Bảng điều khiển (Settings) với đầy đủ nội dung -->
+    <div class="settings-panel" id="settings-panel">
+        <div class="panel-inner custom-scroll">
+            <header>
+                <h2>DASHBOARD</h2>
+                <button id="close-settings" class="retro-close">&times;</button>
+            </header>
+            <div class="control-group">
+                <label class="retro-btn" for="folder-input">MOUNT DRIVE</label>
+                <input type="file" id="folder-input" webkitdirectory directory multiple hidden>
+            </div>
+            <div class="control-group">
+                <div class="slider-box">
+                    <span>PITCH CONTROL</span>
+                    <input type="range" id="pitch-slider" min="0.5" max="1.5" step="0.01" value="1">
+                </div>
+                <div class="slider-box">
+                    <span>MASTER VOL</span>
+                    <input type="range" id="vol-slider" min="0" max="1" step="0.1" value="0.8">
+                </div>
+            </div>
+            <div class="control-group">
+                <h3>PLAYBACK MODE</h3>
+                <div class="playback-controls" id="playback-controls">
+                    <button id="mode-normal" class="pm-btn active" title="Play Thru"><i
+                            class="fas fa-arrow-right"></i></button>
+                    <button id="mode-repeat-all" class="pm-btn" title="Repeat All"><i
+                            class="fas fa-repeat"></i></button>
+                    <button id="mode-repeat-one" class="pm-btn" title="Repeat One"><i class="fas fa-1"></i></button>
+                    <button id="mode-shuffle" class="pm-btn" title="Shuffle"><i class="fas fa-shuffle"></i></button>
+                </div>
+            </div>
+            <div class="control-group">
+                <h3>STYLING</h3>
+                <div class="color-row">
+                    <span>CHASSIS</span><input type="color" id="color-bg" value="#0a0a0a" class="retro-color">
+                </div>
+                <div class="color-row">
+                    <span>VINYL LABEL</span><input type="color" id="color-vinyl" value="#222222" class="retro-color">
+                </div>
+            </div>
+            <div class="control-group">
+                <h3>METADATA (CURRENT TRACK)</h3>
+                <input type="text" id="artist-input" placeholder="Artist name..." class="retro-input">
+                <input type="text" id="title-input" placeholder="Track title..." class="retro-input"
+                    style="margin-top: 10px;">
+                <input type="text" id="cover-url-input" placeholder="Paste image link here..." class="retro-input"
+                    style="margin-top: 10px;">
+                <button id="refetch-lyrics" class="retro-btn"
+                    style="margin-top:20px; font-size: 0.6rem; padding: 10px;">REFETCH LYRICS</button>
+            </div>
+            <div class="control-group list-area">
+                <h3>TRACKLIST (<span id="track-count">0</span>)</h3>
+                <div id="track-list-items" class="custom-scroll"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="stage">
+        <!-- Lyrics Container -->
+        <div class="lyrics-container">
+            <div class="meta-info">
+                <div class="title-marquee-container">
+                    <div class="marquee-content" id="title-wrapper">
+                        <h1 id="song-title">ANALOG.IO</h1>
+                    </div>
+                </div>
+                <div class="artist-badge" id="artist-name">SYSTEM_READY</div>
+            </div>
+            <div class="lyrics-window" id="lyrics-box"></div>
+        </div>
+
+        <!-- Realistic Tone Arm -->
+        <div class="arm-system" id="arm-trigger">
+            <div class="arm-base"></div>
+            <div class="arm-pivot" id="arm-pivot">
+                <div class="arm-shaft">
+                    <div class="arm-head">
+                        <div class="stylus"></div>
+                    </div>
+                </div>
+                <div class="counterweight"></div>
+            </div>
+        </div>
+
+        <!-- Enormous Vinyl -->
+        <div class="vinyl-viewport">
+            <div class="vinyl-disk" id="disk">
+                <div class="grooves"></div>
+                <div class="label" id="disk-cover"></div>
+                <div class="gloss"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gallery & Progress Bar -->
+    <div class="gallery-container" id="gallery-container">
+        <div class="gallery-stack" id="album-gallery"></div>
+    </div>
+    <div class="bottom-progress">
+        <div class="fill" id="progress-fill"></div>
+    </div>
+
+    <audio id="audio"></audio>
+    <script src="script.js"></script>
+</body>
+
+</html>

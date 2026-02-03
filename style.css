@@ -1,0 +1,495 @@
+/* Toàn bộ CSS từ phiên bản trước được giữ nguyên tại đây */
+:root {
+  --bg-color: #0a0a0a;
+  --accent: #fff;
+  --vinyl-color: #222222;
+  --disk-size: 150vh; /* Made vinyl larger */
+}
+
+/* ... (dán toàn bộ CSS từ phiên bản trước vào đây) ... */
+body {
+  background-color: var(--bg-color);
+  color: var(--accent);
+  margin: 0;
+  height: 100vh;
+  overflow: hidden;
+  font-family: "Manrope", sans-serif;
+  /* FIXED: Removed flex properties from body to restore original layout context */
+}
+
+/* ADDED: New .stage selector to control the main scene area */
+.stage {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: center; /* This now correctly centers the .lyrics-container vertically */
+  overflow: hidden; /* Ensures the hidden part of the vinyl doesn't cause scrollbars */
+}
+
+.settings-trigger {
+  position: fixed;
+  top: 30px;
+  left: 30px;
+  z-index: 2000;
+  cursor: pointer;
+  padding: 10px 20px;
+  border: 2px solid #fff;
+  font-family: "Syncopate";
+  font-size: 0.8rem;
+  letter-spacing: 2px;
+}
+.settings-panel {
+  position: fixed;
+  top: 0;
+  left: -480px; /* Adjusted for wider panel */
+  width: 420px; /* Wider panel */
+  height: 100%;
+  background: #111;
+  z-index: 2100;
+  border-right: 1px solid #333;
+  transition: 0.5s cubic-bezier(0.8, 0, 0.2, 1);
+  padding: 20px;
+  box-sizing: border-box;
+}
+.panel-inner {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  padding: 40px 20px;
+  box-sizing: border-box;
+}
+.settings-panel.open {
+  left: 0;
+}
+.settings-panel header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 20px;
+}
+.retro-btn {
+  display: block;
+  width: 100%;
+  border: 2px solid #fff;
+  padding: 15px;
+  text-align: center;
+  font-family: "Syncopate";
+  font-size: 0.7rem;
+  cursor: pointer;
+  background: transparent;
+  color: #fff;
+  margin-bottom: 20px;
+  box-sizing: border-box;
+}
+.retro-close {
+  background: transparent;
+  border: 1px solid #444;
+  color: #fff;
+  width: 30px;
+  height: 30px;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+.retro-input {
+  width: 100%;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  color: #fff;
+  padding: 12px;
+  font-family: "JetBrains Mono";
+  font-size: 0.7rem;
+  box-sizing: border-box;
+}
+.control-group {
+  margin-bottom: 30px;
+}
+.control-group h3 {
+  font-size: 0.6rem;
+  letter-spacing: 3px;
+  color: #555;
+  border-bottom: 1px solid #222;
+  padding-bottom: 5px;
+  text-transform: uppercase;
+}
+.slider-box span {
+  font-size: 0.6rem;
+  color: #666;
+  display: block;
+  margin: 15px 0 5px;
+}
+input[type="range"] {
+  width: 100%;
+  accent-color: #fff;
+}
+.color-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 10px 0;
+  font-size: 0.7rem;
+}
+input[type="color"] {
+  background: none;
+  border: 1px solid #333;
+  width: 40px;
+  height: 20px;
+  cursor: pointer;
+  padding: 0;
+}
+.lyrics-container {
+  width: 65vw; /* Tăng từ 45 lên 65 */
+  padding-left: 5vw;
+  z-index: 500; /* Đảm bảo nằm dưới Arm nhưng trên Vinyl */
+  position: relative;
+  pointer-events: none; /* Để không chặn thao tác xoay đĩa bên dưới */
+}
+.title-marquee-container {
+  width: 45vw;
+  overflow: hidden;
+  position: relative;
+  border-left: 5px solid var(--accent);
+  padding-left: 25px;
+}
+.marquee-content {
+  display: flex;
+  white-space: nowrap;
+  width: max-content;
+}
+#song-title {
+  font-family: "Syncopate", sans-serif;
+  font-size: 5.5rem;
+  line-height: 1.1;
+  margin: 0;
+  text-transform: uppercase;
+  color: #fff;
+}
+.running {
+  animation: marquee-move 20s linear infinite;
+}
+@keyframes marquee-move {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.artist-badge {
+  display: inline-block;
+  background: #fff;
+  color: #000;
+  padding: 6px 15px;
+  font-weight: 800;
+  font-size: 0.8rem;
+  margin: 20px 0 40px;
+  letter-spacing: 3px;
+  font-family: "Syncopate", sans-serif;
+}
+.lyrics-window {
+  height: 40vh;
+  width: 100%;
+  overflow: visible;
+  position: relative;
+  mask-image: linear-gradient(transparent, #000 15%, #000 85%, transparent);
+  scrollbar-width: none;
+}
+.lyrics-window::-webkit-scrollbar {
+  display: none;
+}
+.lyric-line {
+  font-size: 1.8rem;
+  font-weight: 500;
+  line-height: 1.6;
+  padding: 15px 0;
+  opacity: 0.2;
+  transition: all 0.5s ease;
+  will-change: transform, opacity;
+  white-space: nowrap;
+  width: fit-content;
+  pointer-events: auto;
+}
+.lyric-line.active {
+  opacity: 1;
+  font-weight: 800;
+  color: var(--accent);
+  transform: scale(1.15) translateX(60px); /* Indented to the right, made larger */
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+}
+.arm-system {
+  position: absolute;
+  left: 50vw;
+  top: 15vh;
+  transform: translateY(-80%);
+  z-index: 1000;
+  cursor: pointer;
+}
+.arm-base {
+  width: 100px;
+  height: 100px;
+  background: radial-gradient(circle, #444, #111);
+  border-radius: 50%;
+  border: 5px solid #222;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+.arm-pivot {
+  position: absolute;
+  top: 50px;
+  left: 50px;
+  width: 600px;
+  height: 30px;
+  transform-origin: 0px 15px;
+  transform: rotate(75deg);
+  transition: 1.5s cubic-bezier(0.6, 0, 0.2, 1);
+}
+body.playing .arm-pivot {
+  transform: rotate(40deg);
+}
+.arm-shaft {
+  width: 500px;
+  height: 12px;
+  background: linear-gradient(90deg, #ccc, #666);
+  border-radius: 6px;
+  position: absolute;
+  top: 9px;
+  left: 0;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.4);
+}
+.counterweight {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  background: radial-gradient(circle at 10px 10px, #aaa, #333);
+  border-radius: 50%;
+  right: 0px;
+  top: -5px;
+}
+.arm-head {
+  position: absolute;
+  left: 0;
+  top: -14px;
+  width: 80px;
+  height: 40px;
+  background: #111;
+  transform: rotate(5deg);
+  border-radius: 4px 10px 10px 4px;
+}
+.stylus {
+  position: absolute;
+  left: 10px;
+  bottom: 0px;
+  width: 4px;
+  height: 12px;
+  background: #fff;
+  clip-path: polygon(50% 100%, 100% 0, 0 0);
+}
+.vinyl-viewport {
+  position: absolute;
+  right: calc(var(--disk-size) / -1.9);
+  top: 50%;
+  transform: translateY(-50%);
+  width: var(--disk-size);
+  height: var(--disk-size);
+}
+.vinyl-disk {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #050505;
+  cursor: grab;
+  user-select: none;
+}
+.vinyl-disk:active {
+  cursor: grabbing;
+}
+.label {
+  width: 38%;
+  height: 38%;
+  border-radius: 50%;
+  background-color: var(--vinyl-color);
+  background-size: cover;
+  background-position: center;
+  border: 4px solid #111;
+  box-shadow:
+    0 0 10px rgba(0, 0, 0, 0.8),
+    inset 0 0 10px rgba(0, 0, 0, 0.5);
+  z-index: 10;
+}
+.grooves {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background-image: repeating-radial-gradient(
+    circle at center,
+    rgba(0, 0, 0, 1) 0px,
+    rgba(0, 0, 0, 1) 1px,
+    rgba(30, 30, 30, 0.5) 1.5px,
+    rgba(0, 0, 0, 1) 2px
+  );
+  z-index: 5;
+  opacity: 0.8;
+}
+.gloss {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  border-radius: 50%;
+  /* Tạo hiệu ứng phản chiếu ánh sáng 2 vùng đối xứng */
+  background: conic-gradient(
+    from 0deg,
+    transparent 10%,
+    rgba(255, 255, 255, 0.15) 25%,
+    transparent 40%,
+    transparent 60%,
+    rgba(255, 255, 255, 0.15) 75%,
+    transparent 90%
+  );
+  pointer-events: none;
+}
+.vinyl-disk::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 30% 30%,
+    rgba(255, 255, 255, 0.05) 0%,
+    transparent 50%
+  );
+  z-index: 21;
+  pointer-events: none;
+}
+
+.gallery-container {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%) translateY(120px);
+  z-index: 2000;
+  padding: 20px 50px 70px;
+  transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0;
+}
+.gallery-container.visible,
+body:hover .gallery-container {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+.gallery-stack {
+  display: flex;
+  align-items: flex-end;
+}
+.album-circle {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  border: 2px solid #333;
+  overflow: hidden;
+  margin-left: -40px;
+  transition: 0.4s;
+  cursor: pointer;
+  background: #111;
+  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
+  flex-shrink: 0;
+}
+.album-circle:hover {
+  transform: translateY(-25px) scale(1.2);
+  z-index: 100;
+  border-color: #fff;
+  margin-right: 15px;
+}
+.album-circle img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.bottom-progress {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  height: 5px;
+  background: #111;
+  z-index: 3000;
+}
+.fill {
+  height: 100%;
+  background: #fff;
+  width: 0%;
+  transition: 0.1s linear;
+  box-shadow: 0 0 15px #fff;
+}
+.custom-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scroll::-webkit-scrollbar-track {
+  background: #111;
+}
+.custom-scroll::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 3px;
+}
+.custom-scroll::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+.list-area {
+  height: 30vh;
+  display: flex;
+  flex-direction: column;
+}
+#track-list-items {
+  flex-grow: 1;
+  overflow-y: auto;
+  border: 1px solid #222;
+  padding: 10px;
+  margin-top: 10px;
+}
+.track-item {
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  font-family: "JetBrains Mono";
+  cursor: grab;
+  border-bottom: 1px dashed #222;
+  transition: background-color 0.3s;
+}
+.track-item:hover {
+  background-color: #1a1a1a;
+}
+.track-item.active-track {
+  background-color: #2a2a2a;
+  color: #fff;
+  font-weight: bold;
+}
+.track-item.dragging {
+  opacity: 0.5;
+}
+.playback-controls {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 10px 0;
+}
+.pm-btn {
+  background: transparent;
+  border: 1px solid #444;
+  color: #666;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+.pm-btn:hover {
+  color: #fff;
+  border-color: #fff;
+}
+.pm-btn.active {
+  color: #000;
+  background: #fff;
+  border-color: #fff;
+  box-shadow: 0 0 15px #fff;
+}
