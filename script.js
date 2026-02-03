@@ -183,7 +183,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       const res = await fetch(
-        `http://localhost:5000/get-metadata?artist=${encodeURIComponent(artist)}&track=${encodeURIComponent(title)}`,
+        `https://audioplay-4mhg.onrender.com/get-metadata?artist=${encodeURIComponent(artist)}&track=${encodeURIComponent(title)}`,
       );
       const data = await res.json();
 
