@@ -26,6 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let playbackMode = "normal";
 
   // Arm Control Constants
+  let dragStartX, dragStartY, dragStartTime;
   const START_ANGLE = 22; // Tâm đĩa (Start)
   const END_ANGLE = 55; // Rìa đĩa (End)
   const IDLE_ANGLE = 75; // Vị trí nghỉ (Pause)
@@ -92,23 +93,31 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function updateUI() {
     document.getElementById("track-count").innerText = playlist.length;
+
+    // Thêm tooltip cho từng bài nhạc trong danh sách
     trackListItems.innerHTML = playlist
       .map(
         (s, i) =>
-          `<div class="track-item ${i === currentIndex ? "active-track" : ""}" onclick="loadSongWrapper(${i})">${s.artist} - ${s.title}</div>`,
+          `<div class="track-item ${i === currentIndex ? "active-track" : ""}" 
+              onclick="loadSongWrapper(${i})" 
+              data-tooltip="Phát bài: ${s.title}">
+            ${s.artist} - ${s.title}
+        </div>`,
       )
       .join("");
 
+    // Thêm tooltip cho các ảnh Album bên dưới
     document.getElementById("album-gallery").innerHTML = playlist
       .map(
         (s, i) =>
-          `<div class="album-circle" onclick="loadSongWrapper(${i})">
+          `<div class="album-circle" 
+              onclick="loadSongWrapper(${i})" 
+              data-tooltip="${s.artist} - ${s.title}">
             ${s.cover ? `<img src="${s.cover}">` : `<div style="width:100%;height:100%;background:hsl(${i * 75},40%,25%);"></div>`}
         </div>`,
       )
       .join("");
   }
-
   async function loadSong(index, shouldPlay = true) {
     if (index < 0 || index >= playlist.length) return;
     pauseMusic();
@@ -180,9 +189,22 @@ document.addEventListener("DOMContentLoaded", () => {
     isPlaying = false;
     document.body.classList.remove("playing");
     audio.pause();
-    // Khi pause thủ công, đưa kim về vị trí nghỉ
-    if (!isDraggingArm) armPivot.style.transform = `rotate(${IDLE_ANGLE}deg)`;
   }
+
+  audio.onended = () => {
+    if (playbackMode === "repeat-one") {
+      loadSong(currentIndex);
+    } else {
+      let nextIndex = currentIndex + 1;
+      if (nextIndex < playlist.length) {
+        loadSong(nextIndex);
+      } else {
+        // Hết bài: Đưa kim về vị trí nghỉ
+        pauseMusic();
+        armPivot.style.transform = `rotate(${IDLE_ANGLE}deg)`;
+      }
+    }
+  };
 
   function spin() {
     if (!isPlaying) return;
@@ -205,6 +227,9 @@ document.addEventListener("DOMContentLoaded", () => {
   armPivot.addEventListener("mousedown", (e) => {
     if (!audio.src) return;
     isDraggingArm = true;
+    dragStartTime = Date.now();
+    dragStartX = e.clientX;
+    dragStartY = e.clientY;
     armTimeHint.style.display = "block";
     e.preventDefault();
   });
@@ -213,22 +238,21 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!isDraggingArm) return;
     let angle = getArmAngle(e);
 
-    // Giới hạn góc
+    // GIỚI HẠN GÓC KÉO: Chỉ cho phép kéo trong vùng đĩa nhạc
     if (angle < START_ANGLE) angle = START_ANGLE;
-    if (angle > IDLE_ANGLE) angle = IDLE_ANGLE;
+    if (angle > END_ANGLE) angle = END_ANGLE; // Chặn đứng ở rìa ngoài, không cho nhảy tới IDLE_ANGLE
 
     armPivot.style.transform = `rotate(${angle}deg)`;
 
-    if (angle <= END_ANGLE) {
-      const progress = (angle - START_ANGLE) / (END_ANGLE - START_ANGLE);
-      const seekTime = progress * audio.duration;
-      const mins = Math.floor(seekTime / 60);
-      const secs = Math.floor(seekTime % 60);
-      armTimeHint.innerText = `${mins}:${secs.toString().padStart(2, "0")}`;
-      updateLyricsManually(seekTime, true);
-    } else {
-      armTimeHint.innerText = "PAUSE";
-    }
+    // Tính toán thời gian hiển thị (dùng biến cục bộ let)
+    const progress = (angle - START_ANGLE) / (END_ANGLE - START_ANGLE);
+    const seekTime = progress * audio.duration;
+
+    const mins = Math.floor(seekTime / 60);
+    const secs = Math.floor(seekTime % 60);
+    armTimeHint.innerText = `${mins}:${secs.toString().padStart(2, "0")}`;
+
+    updateLyricsManually(seekTime, true);
   });
 
   window.addEventListener("mouseup", (e) => {
@@ -236,16 +260,36 @@ document.addEventListener("DOMContentLoaded", () => {
     isDraggingArm = false;
     armTimeHint.style.display = "none";
 
+    const dragDuration = Date.now() - dragStartTime;
+    const dragDistance = Math.hypot(
+      e.clientX - dragStartX,
+      e.clientY - dragStartY,
+    );
+
+    // 1. XỬ LÝ CLICK (Nhấn nhanh vào kim): Play/Pause
+    if (dragDuration < 200 && dragDistance < 10) {
+      if (isPlaying) {
+        pauseMusic();
+      } else {
+        // Nếu đang ở vị trí nghỉ, đưa vào bài hát rồi chơi
+        if (currentIndex === -1) return;
+        playMusic();
+      }
+      return;
+    }
+
+    // 2. XỬ LÝ KÉO (Drag): Tua nhạc
     let angle = getArmAngle(e);
-    if (angle > END_ANGLE + 5) {
-      pauseMusic();
-    } else {
-      const progress = (angle - START_ANGLE) / (END_ANGLE - START_ANGLE);
-      audio.currentTime = progress * audio.duration;
+    // Chặn giá trị để không bị lỗi 404 thời gian
+    if (angle < START_ANGLE) angle = START_ANGLE;
+    if (angle > END_ANGLE) angle = END_ANGLE;
 
-      audio.currentTime = targetTime;
-      updateLyricsManually(targetTime, true);
+    const progress = (angle - START_ANGLE) / (END_ANGLE - START_ANGLE);
+    const finalSeekTime = progress * audio.duration; // Đã sửa: dùng finalSeekTime rõ ràng
 
+    if (!isNaN(finalSeekTime)) {
+      audio.currentTime = finalSeekTime;
+      updateLyricsManually(finalSeekTime, true);
       playMusic();
     }
   });
@@ -255,12 +299,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (isDraggingArm || isNaN(audio.duration) || !isPlaying) return;
 
     const progress = audio.currentTime / audio.duration;
+    // Kim chạy từ START (22) đến END (55)
     const currentAngle = START_ANGLE + progress * (END_ANGLE - START_ANGLE);
     armPivot.style.transform = `rotate(${currentAngle}deg)`;
 
     document.getElementById("progress-fill").style.width = `${progress * 100}%`;
-
-    // Khi nhạc đang trôi bình thường, dùng behavior "smooth" (mặc định isFast = false)
     updateLyricsManually(audio.currentTime);
   };
 
@@ -317,4 +360,38 @@ document.addEventListener("DOMContentLoaded", () => {
   window.loadSongWrapper = (index) => {
     if (index !== currentIndex) loadSong(index);
   };
+
+  const armTrigger = document.getElementById("arm-trigger");
+  const hintText = document.getElementById("hint-text");
+
+  armTrigger.addEventListener("mouseenter", () => {
+    hintText.style.opacity = "0.6";
+  });
+  armTrigger.addEventListener("mouseleave", () => {
+    hintText.style.opacity = "0";
+  });
+
+  document.addEventListener("mouseover", (e) => {
+    const target = e.target.closest("[data-tooltip]");
+    if (!target) return;
+
+    // Ép trình duyệt render tooltip ngầm để lấy kích thước
+    const tooltip = window.getComputedStyle(target, "::before");
+
+    // Đợi một chút để CSS transition bắt đầu hoặc dùng getBoundingClientRect
+    const rect = target.getBoundingClientRect();
+    const tooltipWidth = 160; // Chiều rộng trung bình của tooltip
+
+    // Kiểm tra lề trái
+    if (rect.left < tooltipWidth / 2) {
+      target.style.setProperty("--tooltip-left", "0");
+      target.style.setProperty("--tooltip-translate", "0");
+    }
+    // Kiểm tra lề phải
+    else if (window.innerWidth - rect.right < tooltipWidth / 2) {
+      target.style.setProperty("--tooltip-left", "auto");
+      target.style.setProperty("--tooltip-right", "0");
+      target.style.setProperty("--tooltip-translate", "0");
+    }
+  });
 });

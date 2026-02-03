@@ -13,7 +13,7 @@
 
 <body>
 
-    <div class="settings-trigger" id="settings-toggle"><span>MENU</span></div>
+    <div class="settings-trigger" id="settings-toggle" data-tooltip="Thiết lập & Danh sách nhạc"><span>MENU</span></div>
 
     <!-- Bảng điều khiển (Settings) với đầy đủ nội dung -->
     <div class="settings-panel" id="settings-panel">
@@ -27,7 +27,7 @@
                 <input type="file" id="folder-input" webkitdirectory directory multiple hidden>
             </div>
             <div class="control-group">
-                <div class="slider-box">
+                <div class="slider-box" data-tooltip="Thay đổi tốc độ phát nhạc">
                     <span>PITCH CONTROL</span>
                     <input type="range" id="pitch-slider" min="0.5" max="1.5" step="0.01" value="1">
                 </div>
@@ -89,7 +89,7 @@
         </div>
 
         <!-- Realistic Tone Arm -->
-        <div class="arm-system" id="arm-trigger">
+        <div class="arm-system" id="arm-trigger" data-tooltip="Kéo để tua | Click để Play/Pause">
             <div class="arm-base"></div>
 
             <div id="arm-time-indicator">00:00</div>
@@ -105,12 +105,17 @@
         </div>
 
         <!-- Enormous Vinyl -->
-        <div class="vinyl-viewport">
+        <div class="vinyl-viewport" data-tooltip="Đĩa xoay theo nhịp nhạc">
             <div class="vinyl-disk" id="disk">
                 <div class="grooves"></div>
                 <div class="label" id="disk-cover"></div>
                 <div class="gloss"></div>
             </div>
+        </div>
+
+        <div id="hint-text"
+            style="position:fixed; bottom:20px; right:20px; font-family:'Syncopate'; font-size:10px; opacity:0; transition:0.5s; letter-spacing:2px; pointer-events:none;">
+            CONTROL: DRAG NEEDLE TO SEEK | CLICK TO TOGGLE
         </div>
     </div>
 

@@ -138,7 +138,7 @@ input[type="color"] {
   padding: 0;
 }
 .lyrics-container {
-  width: 65vw; /* Tăng từ 45 lên 65 */
+  width: 85vw; /* Tăng từ 45 lên 65 */
   padding-left: 5vw;
   z-index: 500; /* Đảm bảo nằm dưới Arm nhưng trên Vinyl */
   position: relative;
@@ -571,4 +571,85 @@ body:hover .gallery-container {
   background: #fff;
   border-color: #fff;
   box-shadow: 0 0 15px #fff;
+}
+
+/* Custom Tooltip Style */
+
+[data-tooltip]::before {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 125%;
+  left: var(--tooltip-left, 50%);
+  right: var(--tooltip-right, auto);
+  transform: translateX(-50%) translateY(10px);
+
+  /* Thiết lập kích thước */
+  padding: 8px 12px;
+  min-width: 100px;
+  max-width: 200px; /* Giới hạn chiều rộng để không quá dài */
+  white-space: normal; /* Cho phép xuống hàng nếu text dài */
+  line-height: 1.4;
+  text-align: center;
+
+  /* Giao diện */
+  background: rgba(255, 255, 255, 0.95);
+  color: #000;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  font-weight: bold;
+  border-radius: 4px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+
+  /* Hiệu ứng ẩn hiện */
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transform: translateX(var(--tooltip-translate, -50%)) translateY(10px);
+  z-index: 99999;
+  pointer-events: none;
+}
+
+[data-tooltip]:hover::before {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(var(--tooltip-translate, -50%)) translateY(0);
+}
+
+/* FIX RIÊNG CHO NÚT MENU (Sát lề trái) */
+.settings-trigger[data-tooltip]::before {
+  bottom: auto; /* Hủy vị trí phía trên */
+  top: 130%; /* Đẩy xuống dưới nút 130% */
+  left: 0; /* Căn lề trái */
+  transform: translateY(-10px); /* Hiệu ứng trượt từ dưới lên */
+  text-align: left;
+  min-width: 160px;
+}
+.settings-trigger[data-tooltip]:hover::before {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0) translateY(0);
+}
+
+/* FIX CHO CÁC PHẦN TỬ TRONG SETTINGS PANEL (Tránh bị panel che) */
+.settings-panel [data-tooltip]::before {
+  bottom: auto;
+  top: 100%; /* Hiện xuống dưới thay vì lên trên */
+  margin-top: 10px;
+}
+
+/* Hiệu ứng hover cho nút MENU */
+.settings-trigger:hover {
+  background: #fff;
+  color: #000;
+}
+
+/* Hiệu ứng hover cho các mục trong Playlist */
+.track-item:hover {
+  padding-left: 20px;
+  border-left: 3px solid #fff;
+}
+
+/* Hover trên đĩa Vinyl */
+.vinyl-disk:hover {
+  box-shadow: 0 0 50px rgba(255, 255, 255, 0.05);
 }
